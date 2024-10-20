@@ -24,25 +24,35 @@ namespace APIAggregator.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAggregatedData(string searchQuery, int? offset, int? limit,
-            int? numberOfTopResults, MediaType type = MediaType.multi, string ? word = null, decimal latitude = 0, decimal longitude = 0,
-            TemperatureUnit temperatureUnit = TemperatureUnit.metric)
+        public async Task<IActionResult> GetAggregatedData(int? SporifySearchLimit,
+            int? SpotifyNumberOfTopResults, string? SpotifySearchKeyword = null, MediaType MediaType = MediaType.multi,
+            string? WordToAnalyze = null, decimal Latitude = 0, decimal Longitude = 0,
+            TemperatureUnit TemperatureUnit = TemperatureUnit.metric)
         {
             try
             {
                 WordApiResponse wordDetails;
-                if (string.IsNullOrEmpty(word))
+                if (string.IsNullOrEmpty(WordToAnalyze))
                 {
                     wordDetails = null;
                 }
                 else
                 {
-                    wordDetails = await wordsService.GetWordDetailsAsync(word);
+                    wordDetails = await wordsService.GetWordDetailsAsync(WordToAnalyze);
                 }
 
-                var weatherApiResponse = await weatherService.GetWeatherDetailsAsync(latitude, longitude, temperatureUnit);
+                var weatherApiResponse = await weatherService.GetWeatherDetailsAsync(Latitude, Longitude, TemperatureUnit);
 
-                var spotifyApiResponse = await spotifyService.GetSpotifyDetailsAsync(searchQuery, offset, limit, numberOfTopResults, type);
+                SpotifyApiResponse spotifyApiResponse;
+                if (string.IsNullOrEmpty(SpotifySearchKeyword))
+                {
+                    spotifyApiResponse = null;
+                }
+                else
+                {
+                    spotifyApiResponse = await spotifyService.GetSpotifyDetailsAsync(SpotifySearchKeyword, 0, SporifySearchLimit,
+                        SpotifyNumberOfTopResults, MediaType);
+                }
 
                 var aggregationResponse = new AggregatedResponse
                 {
